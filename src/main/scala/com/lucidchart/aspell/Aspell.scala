@@ -36,6 +36,15 @@ case class WordSuggestions(word: String, valid: Boolean, suggestions: Array[Stri
 object Aspell {
   NativeLibraryLoader.load(s"/${BuildInfo.libraryName}.so")
 
+  private val apostropheLike = "[\u2019\u02bc\u055a\uff07]".r
+  /**
+   * Normalize the word so that we can spell check words with
+   * special characters (such as non-ASCII apostrophes)
+   */
+  private def normalizeWord(word: String) = {
+    apostropheLike.replaceAllIn(word, "'")
+  }
+
   /**
    * Check the spelling for each word in an array of words
    *
@@ -54,7 +63,8 @@ object Aspell {
       aspell.addUserWords(userWords)
     }
     val checks = words.map { word =>
-      val wordCheck = aspell.check(word)
+      val normalized = normalizeWord(word)
+      val wordCheck = aspell.check(normalized)
       val valid = Try {
         if (wordCheck(0).toInt == 1) true else false
       }.getOrElse(false)
