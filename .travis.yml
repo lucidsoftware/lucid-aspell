@@ -24,10 +24,10 @@ deploy:
 install:
   - sudo apt-get install gcc libaspell-dev libaspell15 aspell
 jdk:
-  - openjdk6
+  - openjdk7
 language: scala
 scala:
-  - 2.10.5
-  - 2.11.6
+  - 2.10.6
+  - 2.11.7
 script:
   - sbt ++$TRAVIS_SCALA_VERSION package native:package
