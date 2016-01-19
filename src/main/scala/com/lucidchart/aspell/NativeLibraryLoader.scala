@@ -7,8 +7,8 @@ import resource._
 private[aspell] object NativeLibraryLoader {
 
   def load(name: String) = {
-    val tempDirectory = new File(System.getProperty("java.io.tmpdir"))
     val fileName = new File(getClass.getResource(name).getPath).getName
+    val tempDirectory = new File(System.getProperty("java.io.tmpdir"))
     val file = new File(tempDirectory + File.separator + fileName)
     for {
       libraryStream <- managed(getClass.getResourceAsStream(name))
