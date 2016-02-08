@@ -25,7 +25,7 @@ install:
   - sudo apt-get install gcc libaspell-dev libaspell15 aspell
 jdk:
   - openjdk7
-  - openjdk8
+  - oraclejdk8
 
 language: scala
 scala:
