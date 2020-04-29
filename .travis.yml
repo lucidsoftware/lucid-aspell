@@ -27,6 +27,7 @@ install:
   - sudo apt-get install gcc libaspell-dev libaspell15 aspell
 jdk:
   - openjdk8
+dist: bionic
 
 language: scala
 scala:
