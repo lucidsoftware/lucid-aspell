@@ -30,7 +30,7 @@ jdk:
 
 language: scala
 scala:
-  - 2.10.6
-  - 2.11.7
+  - 2.10.7
+  - 2.11.12
 script:
   - sbt ++$TRAVIS_SCALA_VERSION package native:package
