@@ -34,7 +34,7 @@ case class WordSuggestions(word: String, valid: Boolean, suggestions: Array[Stri
  * library and has a method to check the spelling on a word.
  */
 object Aspell {
-  NativeLibraryLoader.load(s"/${BuildInfo.libraryName}.so")
+  NativeLibraryLoader.load(s"/${BuildInfo.libraryName}")
 
   /**
    * Check the spelling for each word in an array of words

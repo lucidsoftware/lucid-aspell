@@ -1,5 +1,6 @@
-import com.github.joprice.Jni
 import java.io.File
+
+enablePlugins(JniPlugin)
 
 lazy val Native = config("native").extend(Compile)
 
@@ -7,15 +8,17 @@ lazy val aspell = (project in file("."))
   .configs(Native)
   .enablePlugins(BuildInfoPlugin)
 
-Jni.settings
-
 inConfig(Native)(Defaults.configSettings ++ Defaults.packageConfig)
 
 addArtifact(artifact in (Native, packageBin), packageBin in Native)
 
 artifactClassifier in (Native, packageBin) := Some("x86_64")
 
-buildInfoKeys := Seq[BuildInfoKey](Jni.Keys.libraryName)
+//TODO: add os detection to system loader and prefix these keys with os?
+buildInfoKeys := Seq[BuildInfoKey](
+  //TODO: replace with jniFullLibraryName when next version is released
+  "libraryName" -> s"lib${jniLibraryName.value}.${jniLibSuffix.value}"
+)
 
 buildInfoPackage := "com.lucidchart.aspell"
 
@@ -32,28 +35,15 @@ dependencyClasspath in Test ++= (exportedProducts in Native).value
 
 exportJars := true
 
-Jni.Keys.includes ++= Seq("-Wl,--no-as-needed -Wl,-rpath,/usr/lib -Wl,-rpath,/usr/local/lib -L/usr/lib -L/usr/local/lib -laspell")
+//TODO: ld: unknown option: --no-as-needed
+// Had to remove this one. I'm not familiar with this flag.
+jniIncludes ++= Seq("-Wl,-rpath,/usr/lib -Wl,-rpath,/usr/local/lib -L/usr/lib -L/usr/local/lib -laspell")
 
-Jni.Keys.libraryName := s"lucidaspell-${version.value}"
+jniLibraryName := s"lucidaspell-${version.value}"
 
-Jni.Keys.jniClasses := Seq(
+jniNativeClasses := Seq(
   "com.lucidchart.aspell.Aspell"
 )
-
-// can remove once https://github.com/joprice/sbt-jni/pull/1 is accepted
-Jni.Keys.javah := Def.task {
-  val log = streams.value.log
-  val javahCommand =
-    Seq(
-      "javah",
-      "-d", Jni.Keys.headersPath.value.getPath,
-      "-classpath", (fullClasspath in Compile).value.map(_.data).mkString(File.pathSeparator)
-    ) ++
-      Jni.Keys.jniClasses.value
-  log.info(javahCommand.mkString(" "))
-  javahCommand ! log
-}.tag(Tags.Compile, Tags.CPU)
-  .value
 
 libraryDependencies ++= Seq(
   "com.jsuereth" %% "scala-arm" % "1.4",
@@ -61,7 +51,7 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-core" % "2.4.17" % Test
 )
 
-managedResourceDirectories in Native += Jni.Keys.binPath.value
+managedResourceDirectories in Native += jniBinPath.value
 
 name := "lucid-aspell"
 
@@ -92,10 +82,12 @@ pomExtra := {
 
 resourceGenerators in Native +=
   Def.task {
-    Jni.Keys.binPath.value.***.filter(_.isFile).get
+    jniBinPath.value.***.filter(_.isFile).get
   }
-    .dependsOn(Jni.Keys.jniCompile)
+    .dependsOn(jniCompile)
     .taskValue
+
+jniNativeCompiler := "g++"
 
 scalaVersion := "2.11.7"
 
